@@ -13,7 +13,7 @@ from torch_geometric.data import DataLoader
 from model import *
 from train import forward
 from tensorboardX import SummaryWriter
-
+import torch
 
 # Logger configuration
 logging.basicConfig(level=logging.DEBUG,
@@ -38,9 +38,9 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     cur_dir = os.getcwd()
-    train_dataset = MultiSessionsGraph(cur_dir + '/../datasets/' + opt.dataset, phrase='train')
-    train_loader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True)
-    test_dataset = MultiSessionsGraph(cur_dir + '/../datasets/' + opt.dataset, phrase='test')
+    train_dataset = MultiSessionsGraph(name='train.txt', raw_dir=cur_dir + '/../datasets/' + opt.dataset + '/raw/')
+    train_loader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=False)
+    test_dataset = MultiSessionsGraph(name='test.txt', raw_dir=cur_dir + '/../datasets/' + opt.dataset + '/raw/')
     test_loader = DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=False)
 
     log_dir = cur_dir + '/../log/' + str(opt.dataset) + '/' + str(opt)
