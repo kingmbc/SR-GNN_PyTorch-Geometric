@@ -40,33 +40,40 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     cur_dir = os.getcwd()
-    train_dataset = MultiSessionsGraph(name='train.txt',
-                                       raw_dir=cur_dir + '/../datasets/' + opt.dataset + '/raw/',
-                                       save_dir=cur_dir + '/../datasets/' + opt.dataset + '/saved/')
+    train_filename, test_filename = 'train.txt', 'test.txt'
+    dataset_name = opt.dataset
+    if 'yoochoose' in opt.dataset:
+        dataset_name = 'yoochoose'
+        train_filename = opt.dataset + '-' + train_filename
+        test_filename = opt.dataset + '-' + test_filename
+
+    train_dataset = MultiSessionsGraph(name=train_filename,
+                                       raw_dir=cur_dir + '/../../../_data/' + dataset_name + '/processed/',
+                                       save_dir=cur_dir + '/../../../_data/' + dataset_name + '/saved/')
     num_train = len(train_dataset)
     train_sampler = SubsetRandomSampler(torch.arange(num_train))
     train_loader = GraphDataLoader(train_dataset, batch_size=opt.batch_size,
                                    # sampler=train_sampler,
                                    shuffle=True, drop_last=False)
 
-    test_dataset = MultiSessionsGraph(name='test.txt',
-                                      raw_dir=cur_dir + '/../datasets/' + opt.dataset + '/raw/',
-                                      save_dir=cur_dir + '/../datasets/' + opt.dataset + '/saved/')
+    test_dataset = MultiSessionsGraph(name=test_filename,
+                                      raw_dir=cur_dir + '/../../../_data/' + dataset_name + '/processed/',
+                                      save_dir=cur_dir + '/../../../_data/' + dataset_name + '/saved/')
     num_test = len(test_dataset)
     test_sampler = SubsetRandomSampler(torch.arange(num_test))
     test_loader = GraphDataLoader(test_dataset, batch_size=opt.batch_size,
                                   # sampler=test_sampler,
                                   shuffle=False, drop_last=False)
 
-    log_dir = cur_dir + '/../log/' + str(opt.dataset) + '/' + str(opt)
+    log_dir = os.path.join(cur_dir, 'log', str(opt.dataset), str(opt))
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     logging.warning('logging to {}'.format(log_dir))
     writer = SummaryWriter(log_dir)
 
-    if opt.dataset == 'diginetica':
+    if 'diginetica' in opt.dataset:
         n_node = 43097
-    elif opt.dataset == 'yoochoose1_64' or opt.dataset == 'yoochoose1_4':
+    elif 'yoochoose' in opt.dataset:
         n_node = 37483
     else:
         n_node = 309
@@ -79,10 +86,10 @@ def main():
     logging.warning(model)
     
     for epoch in tqdm(range(opt.epoch)):
-        scheduler.step()
         forward(model, train_loader, device, writer, epoch, top_k=opt.top_k, optimizer=optimizer, train_flag=True)
         with torch.no_grad():
             forward(model, test_loader, device, writer, epoch, top_k=opt.top_k, train_flag=False)
+        scheduler.step()
 
 
 if __name__ == '__main__':

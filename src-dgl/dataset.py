@@ -14,13 +14,13 @@ class MultiSessionsGraph(DGLDataset):
     def __init__(self, name, raw_dir=None, force_reload=False, save_dir=None):
         """
         Args:
+            name: 'train.txt' or 'test.txt'
             root: 'sample', 'yoochoose1_4', 'yoochoose1_64' or 'diginetica'
-            phrase: 'train' or 'test'
         """
         super(MultiSessionsGraph, self).__init__(name=name, raw_dir=raw_dir, save_dir=save_dir, force_reload=force_reload)
 
     def process(self):
-        data = pickle.load(open(self.raw_dir + '/' + self.name, 'rb'))
+        data = pickle.load(open(os.path.join(self.raw_dir, self.name), 'rb'))
         self.graphs = []
         self.labels = []
         self.all_seqs = []
@@ -90,9 +90,12 @@ class MultiSessionsGraph(DGLDataset):
 
         self.graphs = graphs
         self.labels = label_dict['labels']
+        self.num_graphs = info_dict['num_graphs']
+        self.num_labels = info_dict['num_labels']
+        self.max_labels = info_dict['max_labels']
+        self.max_node_id = info_dict['max_node_id']
         self.max_num_unique_node = info_dict['max_num_unique_node']
         self.max_seq_length = info_dict['max_seq_length']
-        self.num_labels = info_dict['num_labels']
 
     def has_cache(self):
         graph_path = os.path.join(self.save_path, 'dgl_graph_{}_{}.bin'.format(self.name, self.hash))
