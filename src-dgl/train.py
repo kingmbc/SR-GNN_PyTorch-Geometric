@@ -6,8 +6,9 @@ Created on 5/4/2019
 
 
 import numpy as np
-import logging
+from tqdm import tqdm
 
+ZERO_PADDING_COUNT = 1
 
 def forward(model, loader, device, writer, epoch, top_k=20, optimizer=None, train_flag=True):
     if train_flag:
@@ -19,11 +20,14 @@ def forward(model, loader, device, writer, epoch, top_k=20, optimizer=None, trai
     mean_loss = 0.0
     updates_per_epoch = len(loader)
 
-    for i, batch in enumerate(loader):
+    for i, (batch_graph, batch_target) in enumerate(tqdm(loader)):
         if train_flag:
             optimizer.zero_grad()
-        scores = model(batch.to(device))
-        targets = batch.y - 1
+        batch_graph = batch_graph.to(device)
+        batch_target = batch_target.to(device)
+
+        scores = model(batch_graph, batch_graph.ndata['x'] - ZERO_PADDING_COUNT)
+        targets = batch_target - ZERO_PADDING_COUNT
         loss = model.loss_function(scores, targets)
 
         if train_flag:
@@ -39,7 +43,7 @@ def forward(model, loader, device, writer, epoch, top_k=20, optimizer=None, trai
                 else:
                     mrr.append(1 / (np.where(score == target)[0][0] + 1))
 
-        mean_loss += loss / batch.num_graphs
+        mean_loss += loss / batch_graph.batch_size
 
     if train_flag:
         writer.add_scalar('loss/train_loss', mean_loss.item(), epoch)

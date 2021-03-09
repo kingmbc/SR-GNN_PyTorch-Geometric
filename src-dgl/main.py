@@ -9,11 +9,12 @@ import argparse
 import logging
 from tqdm import tqdm
 from dataset import MultiSessionsGraph
-from torch_geometric.data import DataLoader
 from model import *
 from train import forward
 from tensorboardX import SummaryWriter
 import torch
+from dgl.dataloading import GraphDataLoader
+from torch.utils.data.sampler import SubsetRandomSampler
 
 # Logger configuration
 logging.basicConfig(level=logging.DEBUG,
@@ -34,14 +35,28 @@ opt = parser.parse_args()
 logging.warning(opt)
 
 
+
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     cur_dir = os.getcwd()
-    train_dataset = MultiSessionsGraph(name='train.txt', raw_dir=cur_dir + '/../datasets/' + opt.dataset + '/raw/')
-    train_loader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=False)
-    test_dataset = MultiSessionsGraph(name='test.txt', raw_dir=cur_dir + '/../datasets/' + opt.dataset + '/raw/')
-    test_loader = DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=False)
+    train_dataset = MultiSessionsGraph(name='train.txt',
+                                       raw_dir=cur_dir + '/../datasets/' + opt.dataset + '/raw/',
+                                       save_dir=cur_dir + '/../datasets/' + opt.dataset + '/saved/')
+    num_train = len(train_dataset)
+    train_sampler = SubsetRandomSampler(torch.arange(num_train))
+    train_loader = GraphDataLoader(train_dataset, batch_size=opt.batch_size,
+                                   # sampler=train_sampler,
+                                   shuffle=True, drop_last=False)
+
+    test_dataset = MultiSessionsGraph(name='test.txt',
+                                      raw_dir=cur_dir + '/../datasets/' + opt.dataset + '/raw/',
+                                      save_dir=cur_dir + '/../datasets/' + opt.dataset + '/saved/')
+    num_test = len(test_dataset)
+    test_sampler = SubsetRandomSampler(torch.arange(num_test))
+    test_loader = GraphDataLoader(test_dataset, batch_size=opt.batch_size,
+                                  # sampler=test_sampler,
+                                  shuffle=False, drop_last=False)
 
     log_dir = cur_dir + '/../log/' + str(opt.dataset) + '/' + str(opt)
     if not os.path.exists(log_dir):
