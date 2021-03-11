@@ -65,8 +65,10 @@ class GNNModel(nn.Module):
 
     def forward(self, g, x):
         batch = g.batch_num_nodes()
-        embedding = self.embedding(x).squeeze()
-        etype = torch.LongTensor([0] * g.number_of_edges()).cuda()
+        x = x.view(-1)
+        embedding = self.embedding(x)
+        etype = torch.LongTensor([0] * g.number_of_edges())
+        etype = etype.type_as(x)
         hidden = self.gated(g, embedding, etype)
         hidden2 = F.relu(hidden)
   
