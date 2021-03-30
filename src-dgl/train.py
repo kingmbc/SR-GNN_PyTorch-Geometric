@@ -25,7 +25,8 @@ def forward(model, loader, device, writer, epoch, top_k=20, optimizer=None, trai
             optimizer.zero_grad()
         batch_graph = batch_graph.to(device)
         batch_target = batch_target.to(device)
-
+        if batch_graph.number_of_edges() == 0:
+            continue
         scores = model(batch_graph, batch_graph.ndata['x'] - ZERO_PADDING_COUNT)
         targets = batch_target - ZERO_PADDING_COUNT
         loss = model.loss_function(scores, targets)

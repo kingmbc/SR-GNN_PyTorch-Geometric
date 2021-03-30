@@ -49,7 +49,8 @@ def main():
 
     train_dataset = MultiSessionsGraph(name=train_filename,
                                        raw_dir=cur_dir + '/../../../_data/' + dataset_name + '/processed/',
-                                       save_dir=cur_dir + '/../../../_data/' + dataset_name + '/saved/')
+                                       save_dir=cur_dir + '/../../../_data/' + dataset_name + '/saved/',
+                                       force_reload=True)
     num_train = len(train_dataset)
     train_sampler = SubsetRandomSampler(torch.arange(num_train))
     train_loader = GraphDataLoader(train_dataset, batch_size=opt.batch_size,
@@ -58,7 +59,8 @@ def main():
 
     test_dataset = MultiSessionsGraph(name=test_filename,
                                       raw_dir=cur_dir + '/../../../_data/' + dataset_name + '/processed/',
-                                      save_dir=cur_dir + '/../../../_data/' + dataset_name + '/saved/')
+                                      save_dir=cur_dir + '/../../../_data/' + dataset_name + '/saved/',
+                                      force_reload=True)
     num_test = len(test_dataset)
     test_sampler = SubsetRandomSampler(torch.arange(num_test))
     test_loader = GraphDataLoader(test_dataset, batch_size=opt.batch_size,
