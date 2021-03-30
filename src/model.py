@@ -37,7 +37,11 @@ class Embedding2Score(nn.Module):
         s_h = self.W_3(torch.cat((torch.cat(v_n, dim=0), torch.cat(s_g, dim=0)), dim=1))
         
         # Eq(8)
+        layer_normed_s_h = layer_norm(s_h)
+        layer_normed_all_emb = layer_norm(all_item_embedding.weight)
+
         z_i_hat = torch.mm(s_h, all_item_embedding.weight.transpose(1, 0))
+        z_i_hat *= 12
         
         return z_i_hat
 
@@ -70,3 +74,11 @@ class GNNModel(nn.Module):
         hidden2 = F.relu(hidden)
   
         return self.e2s(hidden2, self.embedding, batch)
+
+def layer_norm(x):
+    ave_x = torch.mean(x, -1).unsqueeze(-1)
+    x = x - ave_x
+    norm_x = torch.sqrt(torch.sum(x ** 2, -1)).unsqueeze(-1)
+    y = x / norm_x
+
+    return y

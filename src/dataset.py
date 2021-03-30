@@ -17,7 +17,7 @@ class MultiSessionsGraph(InMemoryDataset):
             root: 'sample', 'yoochoose1_4', 'yoochoose1_64' or 'diginetica'
             phrase: 'train' or 'test'
         """
-        assert phrase in ['train', 'test']
+        # assert phrase in ['train', 'test']
         self.phrase = phrase
         super(MultiSessionsGraph, self).__init__(root, transform, pre_transform)
         self.data, self.slices = torch.load(self.processed_paths[0])
@@ -34,7 +34,7 @@ class MultiSessionsGraph(InMemoryDataset):
         pass
     
     def process(self):
-        data = pickle.load(open(self.raw_dir + '/' + self.raw_file_names[0], 'rb'))
+        data = pickle.load(open(self.processed_dir + '/' + self.raw_file_names[0], 'rb'))
         data_list = []
         
         for sequences, y in zip(data[0], data[1]):

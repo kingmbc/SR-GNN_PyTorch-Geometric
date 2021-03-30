@@ -37,10 +37,14 @@ logging.warning(opt)
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    dataset_name = opt.dataset
+    if 'yoochoose' in opt.dataset:
+        dataset_name = 'yoochoose'
+
     cur_dir = os.getcwd()
-    train_dataset = MultiSessionsGraph(cur_dir + '/../datasets/' + opt.dataset, phrase='train')
+    train_dataset = MultiSessionsGraph(cur_dir + '../../../../_data/' + dataset_name, phrase=f'{opt.dataset}-train')
     train_loader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True)
-    test_dataset = MultiSessionsGraph(cur_dir + '/../datasets/' + opt.dataset, phrase='test')
+    test_dataset = MultiSessionsGraph(cur_dir + '../../../../_data/' + dataset_name, phrase=f'{opt.dataset}-test')
     test_loader = DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=False)
 
     log_dir = cur_dir + '/../log/' + str(opt.dataset) + '/' + str(opt)
